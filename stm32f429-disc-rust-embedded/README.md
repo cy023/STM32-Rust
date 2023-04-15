@@ -45,14 +45,14 @@ programs, check [the embedded Rust book][book].
 You can find this information in the data sheet or the reference manual of your
 device.
 
-In this example we'll be using the STM32F3DISCOVERY. This board contains an
-STM32F303VCT6 microcontroller. This microcontroller has:
+In this example we'll be using the STM32F429ZIT6. This board contains an
+STM32F429ZIT6 microcontroller. This microcontroller has:
 
 - A Cortex-M4F core that includes a single precision FPU
 
-- 256 KiB of Flash located at address 0x0800_0000.
+- 2028 KiB of Flash located at address 0x0800_0000.
 
-- 40 KiB of RAM located at address 0x2000_0000. (There's another RAM region but
+- 192 KiB of RAM located at address 0x2000_0000. (There's another RAM region but
   for simplicity we'll ignore it).
 
 1. Instantiate the template.
@@ -67,7 +67,7 @@ $ cd app
 ```
 
 2. Set a default compilation target. There are four options as mentioned at the
-   bottom of `.cargo/config`. For the STM32F303VCT6, which has a Cortex-M4F
+   bottom of `.cargo/config`. For the STM32F429ZIT6, which has a Cortex-M4F
    core, we'll pick the `thumbv7em-none-eabihf` target.
 
 ``` console
@@ -90,20 +90,29 @@ target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 ``` console
 $ cat memory.x
-/* Linker script for the STM32F303VCT6 */
+/* Linker script for the STM32F429ZIT6 */
 MEMORY
 {
-  /* NOTE 1 K = 1 KiBi = 1024 bytes */
-  FLASH : ORIGIN = 0x08000000, LENGTH = 256K
-  RAM : ORIGIN = 0x20000000, LENGTH = 40K
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 2048K
+    RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 192K
 }
 ```
 
 4. Build the template application or one of the examples.
 
 ``` console
-$ cargo build
+$ cargo build --release
 ```
+
+5. Convert ELF (Executable and Linkable Format) format to BIN format.
+
+``` console
+$ arm-none-eabi-objcopy -O binary target/thumbv7em-none-eabihf/release/<project_name> <project_name>.bin
+```
+
+6. Program the image file into the development board.
+
+You can use STM32CubeProgrammer to flash the binary file to the board, or simply drag and drop the binary file into the disk device that appears when you connect the STM32 board to your computer via USB.
 
 ## VS Code
 
